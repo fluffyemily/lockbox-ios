@@ -134,17 +134,7 @@ class LockboxXCUITests: BaseTestCase {
         waitforExistence(app.buttons["disconnectFirefoxLockbox.button"])
 
         // Now disconnect the account
-        navigator.performAction(Action.DisconnectFirefoxLockbox)
-
-        // And, connect it again
-        waitforExistence(app.buttons["getStarted.button"])
-        app.buttons["getStarted.button"].tap()
-        userState.fxaUsername =  emailTestAccountLogins
-        userState.fxaPassword = passwordTestAccountLogins
-        waitforExistence(app.webViews.textFields["Email"], timeout: 10)
-        navigator.nowAt(Screen.FxASigninScreenEmail)
-        navigator.performAction(Action.FxATypeEmail)
-        navigator.performAction(Action.FxATypePassword)
+        disconnectAndConnectAccount()
 
         if #available(iOS 12.0, *) {
             waitforExistence(app.buttons["setupAutofill.button"])
@@ -262,17 +252,7 @@ class LockboxXCUITests: BaseTestCase {
     // Verify SetAutofillNow
     func testSetAutofillNow() {
         // Disconnect account
-        navigator.performAction(Action.DisconnectFirefoxLockbox)
-        // And, connect it again
-        waitforExistence(app.buttons["getStarted.button"])
-        app.buttons["getStarted.button"].tap()
-        userState.fxaUsername =  emailTestAccountLogins
-        userState.fxaPassword = passwordTestAccountLogins
-        waitforExistence(app.webViews.textFields["Email"], timeout: 10)
-        navigator.nowAt(Screen.FxASigninScreenEmail)
-        navigator.performAction(Action.FxATypeEmail)
-        navigator.performAction(Action.FxATypePassword)
-
+        disconnectAndConnectAccount()
         if #available(iOS 12.0, *) {
             waitforExistence(app.buttons["setupAutofill.button"])
             app.buttons["setupAutofill.button"].tap()
@@ -301,14 +281,32 @@ class LockboxXCUITests: BaseTestCase {
         safari.launch()
         waitforExistence(safari.buttons["URL"])
         safari.buttons["URL"].tap()
-        safari.textFields["URL"].typeText("gmail.com")
+        safari.textFields["URL"].typeText("https://wopr.norad.org/~sarentz/fxios/testpages/password.html")
         safari.textFields["URL"].typeText("\r")
-        waitforExistence(safari.textFields["Correo electrónico o teléfono"])
-        safari.textFields["Correo electrónico o teléfono"].tap()
-        safari.textFields["Correo electrónico o teléfono"].typeText("iosmztest")
-        safari.otherElements["Password Auto-fill"].tap()
-        // Need to confirm what is shown here, different elements have appeared and also that the field is correctly filled in
+        print(safari.debugDescription)
+        waitforExistence(safari.textFields["test@example.com"])
+        safari.textFields["test@example.com"].tap()
+        // Need to confirm what is shown here, different elements have appeared and
+        if (safari.otherElements["Password Auto-fill"].exists) {
+            safari.otherElements["Password Auto-fill"].tap()
+        }
+        safari.buttons["Use “test@example.com”"].tap()
+        // Once previous is clear we can assert that the element shown is correct
         //XCTAssertTrue(safari.buttons["iosmztest@gmail.com, for this website — Lockbox"].exists)
         safari.terminate()
+    }
+
+    private func disconnectAndConnectAccount() {
+        navigator.performAction(Action.DisconnectFirefoxLockbox)
+        // And, connect it again
+        waitforExistence(app.buttons["getStarted.button"])
+        app.buttons["getStarted.button"].tap()
+        userState.fxaUsername =  emailTestAccountLogins
+        userState.fxaPassword = passwordTestAccountLogins
+        waitforExistence(app.webViews.textFields["Email"], timeout: 10)
+        navigator.nowAt(Screen.FxASigninScreenEmail)
+        navigator.performAction(Action.FxATypeEmail)
+        navigator.performAction(Action.FxATypePassword)
+
     }
 }
